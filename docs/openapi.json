@@ -1,0 +1,4996 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Frontend Learning API",
+    "version": "1.0.0",
+    "description": "A small, modular Supabase Edge Functions API for learning frontend integration. Protected JSON endpoints share one success/error envelope. Tokens are explicit Bearer headers; the application sets no authentication cookies. API keys belong on trusted servers, never inside a public frontend bundle. Resource ownership is enforced for members and administrators alike. See README and docs/frontend.md for an end-to-end tutorial."
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8787",
+      "description": "Local PostgreSQL development"
+    },
+    {
+      "url": "https://{projectRef}.supabase.co/functions/v1/backend",
+      "description": "Live API; local frontend calls this complete base URL",
+      "variables": {
+        "projectRef": {
+          "default": "fvhpmujmbavwdpjoyyal"
+        }
+      }
+    }
+  ],
+  "tags": [
+    {
+      "name": "System",
+      "description": "Public discovery, health, and documentation."
+    },
+    {
+      "name": "Authentication",
+      "description": "Short-lived, session-backed access JWTs and single-use rotating refresh tokens."
+    },
+    {
+      "name": "API keys",
+      "description": "Bearer-only key management. Keys authorize trusted server integrations with narrow scopes."
+    },
+    {
+      "name": "Projects",
+      "description": "Projects owned by the authenticated user."
+    },
+    {
+      "name": "Tasks",
+      "description": "Tasks owned by the authenticated user."
+    },
+    {
+      "name": "Files",
+      "description": "Private, owner-scoped raster image uploads and downloads."
+    },
+    {
+      "name": "Users",
+      "description": "Current-user profile and administrator directory."
+    },
+    {
+      "name": "Audit",
+      "description": "Administrator access to security audit events."
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "operationId": "health",
+        "tags": [
+          "System"
+        ],
+        "summary": "Check API liveness",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "ok"
+                        },
+                        "version": {
+                          "type": "string",
+                          "const": "1.0.0"
+                        }
+                      },
+                      "required": [
+                        "status",
+                        "version"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "status": "ok",
+                    "version": "1.0.0"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/ready": {
+      "get": {
+        "operationId": "ready",
+        "tags": [
+          "System"
+        ],
+        "summary": "Check database readiness",
+        "description": "Runs a lightweight PostgreSQL query. A failed dependency returns 503 without infrastructure details.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "status": {
+                          "type": "string",
+                          "const": "ready"
+                        }
+                      },
+                      "required": [
+                        "status"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "status": "ready"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/openapi.json": {
+      "get": {
+        "operationId": "openApi",
+        "tags": [
+          "System"
+        ],
+        "summary": "Download this OpenAPI 3.1 document",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "The OpenAPI document itself (no envelope).",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/docs": {
+      "get": {
+        "operationId": "apiReference",
+        "tags": [
+          "System"
+        ],
+        "summary": "Read the API reference",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Self-contained HTML locally; the free Supabase domain rewrites HTML to text/plain. Use the PDF or portable docs/index.html for the formatted reference. No JSON envelope.",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/docs.css": {
+      "get": {
+        "operationId": "apiReferenceStyles",
+        "tags": [
+          "System"
+        ],
+        "summary": "Read the API reference stylesheet",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Local CSS stylesheet (no JSON envelope).",
+            "content": {
+              "text/css": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1": {
+      "get": {
+        "operationId": "discovery",
+        "tags": [
+          "System"
+        ],
+        "summary": "Discover API links and version",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "version": {
+                          "type": "string",
+                          "const": "v1"
+                        },
+                        "documentation": {
+                          "type": "string",
+                          "const": "/docs"
+                        },
+                        "openapi": {
+                          "type": "string",
+                          "const": "/openapi.json"
+                        },
+                        "resources": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        }
+                      },
+                      "required": [
+                        "version",
+                        "documentation",
+                        "openapi",
+                        "resources"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "version": "v1",
+                    "documentation": "/docs",
+                    "openapi": "/openapi.json",
+                    "resources": [
+                      "example"
+                    ]
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/register": {
+      "post": {
+        "operationId": "register",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Register a member and create a session",
+        "security": [],
+        "description": "Public registration can be disabled by configuration. Unknown fields, including role, are rejected. New accounts always have the member role. Registration name is limited to 80 characters.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterInput"
+              },
+              "example": {
+                "email": "learner@example.com",
+                "name": "API Learner",
+                "password": "use-a-unique-long-password"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account and session created.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthTokens"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "user": {
+                      "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "email": "learner@example.com",
+                      "name": "API Learner",
+                      "role": "member",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    },
+                    "accessToken": "eyJ...example-access-token",
+                    "refreshToken": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "tokenType": "Bearer",
+                    "expiresIn": 900,
+                    "sessionExpiresAt": "2026-01-08T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/login": {
+      "post": {
+        "operationId": "login",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Create a session using email and password",
+        "security": [],
+        "description": "A user may have at most 20 active sessions; creating a new session beyond the cap atomically revokes the oldest session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              },
+              "example": {
+                "email": "learner@example.com",
+                "password": "use-a-unique-long-password"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthTokens"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "user": {
+                      "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "email": "learner@example.com",
+                      "name": "API Learner",
+                      "role": "member",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    },
+                    "accessToken": "eyJ...example-access-token",
+                    "refreshToken": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "tokenType": "Bearer",
+                    "expiresIn": 900,
+                    "sessionExpiresAt": "2026-01-08T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/refresh": {
+      "post": {
+        "operationId": "refresh",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Rotate a refresh token and obtain a new access token",
+        "security": [],
+        "description": "Send the refresh token in JSON. It can be used once. Store the returned replacement. Coordinate refreshes in the frontend so parallel requests do not race. An invalid, expired, or reused token returns 401. Replay of a consumed token revokes the entire session.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshInput"
+              },
+              "example": {
+                "refreshToken": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/AuthTokens"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "user": {
+                      "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "email": "learner@example.com",
+                      "name": "API Learner",
+                      "role": "member",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    },
+                    "accessToken": "eyJ...example-access-token",
+                    "refreshToken": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+                    "tokenType": "Bearer",
+                    "expiresIn": 900,
+                    "sessionExpiresAt": "2026-01-08T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Revoke the current session",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Send the current access token. No request body is needed. Its access and refresh tokens stop authorizing requests after revocation.",
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Revoked"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "revoked": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/me": {
+      "get": {
+        "operationId": "authMe",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Get the current authenticated user",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Current user.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "user": {
+                          "$ref": "#/components/schemas/User"
+                        }
+                      },
+                      "required": [
+                        "user"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "user": {
+                      "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "email": "learner@example.com",
+                      "name": "API Learner",
+                      "role": "member",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    }
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "listSessions",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "List your active sessions",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "sessions": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/Session"
+                          }
+                        }
+                      },
+                      "required": [
+                        "sessions"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "sessions": [
+                      {
+                        "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                        "createdAt": "2026-01-01T10:00:00.000Z",
+                        "expiresAt": "2026-01-08T10:00:00.000Z",
+                        "lastSeenAt": "2026-01-01T10:00:00.000Z",
+                        "current": true
+                      }
+                    ]
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/auth/sessions/{id}": {
+      "delete": {
+        "operationId": "revokeSession",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Revoke one of your sessions",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Revoked"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "revoked": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/api-keys": {
+      "get": {
+        "operationId": "listApiKeys",
+        "tags": [
+          "API keys"
+        ],
+        "summary": "List your API keys without their secrets",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "properties": {
+                        "items": {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/components/schemas/ApiKey"
+                          }
+                        }
+                      },
+                      "required": [
+                        "items"
+                      ]
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "items": [
+                      {
+                        "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                        "name": "Server integration",
+                        "prefix": "ak_AAAAAAAA",
+                        "scopes": [
+                          "resources:read"
+                        ],
+                        "createdAt": "2026-01-01T10:00:00.000Z",
+                        "expiresAt": "2026-01-31T10:00:00.000Z"
+                      }
+                    ]
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createApiKey",
+        "tags": [
+          "API keys"
+        ],
+        "summary": "Create a scoped key for a trusted server",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "The key secret is returned exactly once. Maximum 20 active keys per user. Copy it to your server secret store. Never put it in Vite/Next.js public variables, browser code, a mobile bundle, or a repository.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApiKeyInput"
+              },
+              "example": {
+                "name": "Server integration",
+                "scopes": [
+                  "resources:read"
+                ],
+                "expiresInDays": 30
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "API key created; secret returned once.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/CreatedApiKey"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "name": "Server integration",
+                    "prefix": "ak_AAAAAAAA",
+                    "scopes": [
+                      "resources:read"
+                    ],
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "expiresAt": "2026-01-31T10:00:00.000Z",
+                    "key": "ak_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/api-keys/{id}": {
+      "delete": {
+        "operationId": "revokeApiKey",
+        "tags": [
+          "API keys"
+        ],
+        "summary": "Revoke your API key",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Revoked"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "revoked": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/projects": {
+      "get": {
+        "operationId": "listProjects",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "List, filter, search, and sort your projects",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires resources:read for API keys. Search matches project name and description as literal text. Other users’ projects never appear.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Allowlisted field; arbitrary SQL column names are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "name"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "active",
+                "archived"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of resources. An empty result is successful.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Project"
+                      }
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId",
+                    "meta"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                      "name": "Learning API integration",
+                      "description": "Practice fetching a real API",
+                      "status": "active",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    }
+                  ],
+                  "requestId": "req_example_01",
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1,
+                    "hasNext": false,
+                    "hasPrevious": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Create a project",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires resources:write for API keys.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              },
+              "example": {
+                "name": "Learning API integration",
+                "description": "Practice fetching a real API",
+                "status": "active"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Project created.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Path to the created resource, including the hosted function mount. Resolve against the API origin."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "name": "Learning API integration",
+                    "description": "Practice fetching a real API",
+                    "status": "active",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/projects/{id}": {
+      "get": {
+        "operationId": "getProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Read a project you own",
+        "description": "Requires resources:read for API keys.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "name": "Learning API integration",
+                    "description": "Practice fetching a real API",
+                    "status": "active",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Update supplied project fields",
+        "description": "Requires resources:write for API keys. Omitted fields remain unchanged.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectPatch"
+              },
+              "example": {
+                "status": "archived"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Project"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "name": "Learning API integration",
+                    "description": "Practice fetching a real API",
+                    "status": "active",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteProject",
+        "tags": [
+          "Projects"
+        ],
+        "summary": "Delete a project you own",
+        "description": "Associated tasks remain; their projectId becomes null. Requires resources:write for API keys.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Deleted"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "deleted": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks": {
+      "get": {
+        "operationId": "listTasks",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "List, filter, search, and sort your tasks",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires resources:read for API keys. Search matches task title and description as literal text.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Allowlisted field; arbitrary SQL column names are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "updatedAt",
+                "title",
+                "dueDate"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "todo",
+                "in_progress",
+                "done"
+              ]
+            }
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "low",
+                "medium",
+                "high"
+              ]
+            }
+          },
+          {
+            "name": "projectId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of resources. An empty result is successful.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Task"
+                      }
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId",
+                    "meta"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "2fdd0cd8-74e6-4776-b509-f312dd442ae2",
+                      "title": "Build a project list",
+                      "description": "Fetch the first page",
+                      "status": "todo",
+                      "priority": "medium",
+                      "projectId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                      "dueDate": "2026-10-31",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    }
+                  ],
+                  "requestId": "req_example_01",
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1,
+                    "hasNext": false,
+                    "hasPrevious": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "createTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Create a task, optionally within your project",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires resources:write for API keys. projectId must identify a project you own.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskCreate"
+              },
+              "example": {
+                "title": "Build a project list",
+                "description": "Fetch the first page",
+                "status": "todo",
+                "priority": "medium",
+                "projectId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                "dueDate": "2026-10-31"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Task created.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Path to the created resource, including the hosted function mount. Resolve against the API origin."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Task"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "2fdd0cd8-74e6-4776-b509-f312dd442ae2",
+                    "title": "Build a project list",
+                    "description": "Fetch the first page",
+                    "status": "todo",
+                    "priority": "medium",
+                    "projectId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "dueDate": "2026-10-31",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/tasks/{id}": {
+      "get": {
+        "operationId": "getTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Read a task you own",
+        "description": "Requires resources:read for API keys.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Task"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "2fdd0cd8-74e6-4776-b509-f312dd442ae2",
+                    "title": "Build a project list",
+                    "description": "Fetch the first page",
+                    "status": "todo",
+                    "priority": "medium",
+                    "projectId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "dueDate": "2026-10-31",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Update supplied task fields",
+        "description": "Requires resources:write for API keys. Omitted fields remain unchanged.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TaskPatch"
+              },
+              "example": {
+                "status": "done",
+                "projectId": null
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Task"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "2fdd0cd8-74e6-4776-b509-f312dd442ae2",
+                    "title": "Build a project list",
+                    "description": "Fetch the first page",
+                    "status": "todo",
+                    "priority": "medium",
+                    "projectId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "dueDate": "2026-10-31",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "409": {
+            "$ref": "#/components/responses/Error409"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteTask",
+        "tags": [
+          "Tasks"
+        ],
+        "summary": "Delete a task you own",
+        "description": "Requires resources:write for API keys.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Deleted"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "deleted": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/files": {
+      "get": {
+        "operationId": "listFiles",
+        "tags": [
+          "Files"
+        ],
+        "summary": "List metadata for your private files",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires files:read for API keys. Search matches filename as literal text.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Allowlisted field; arbitrary SQL column names are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "filename",
+                "size"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "contentType",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "image/png",
+                "image/jpeg",
+                "image/webp"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of resources. An empty result is successful.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/File"
+                      }
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId",
+                    "meta"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                      "filename": "profile.png",
+                      "contentType": "image/png",
+                      "size": 1024,
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "downloadUrl": "/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content"
+                    }
+                  ],
+                  "requestId": "req_example_01",
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1,
+                    "hasNext": false,
+                    "hasPrevious": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "post": {
+        "operationId": "uploadFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Upload a raster image as raw bytes",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires files:write for API keys. Send the File/Blob directly, not JSON, base64, or multipart FormData. MIME, extension, signature, image structure and dimensions are checked. Upload size is limited by MAX_UPLOAD_BYTES; default 5 MiB. Maximum 40 million pixels and 16384 pixels per side. APNG and animated WebP are rejected. Files are private in Storage.",
+        "parameters": [
+          {
+            "name": "X-File-Name",
+            "in": "header",
+            "required": true,
+            "description": "Start with an ASCII letter/digit; remaining characters may be ASCII letters, digits, spaces, dots, underscores, and hyphens; no paths. Spaces are normalized to underscores. Extension must match MIME (case-insensitive).",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 120,
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9 ._-]*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Ww][Ee][Bb][Pp])$"
+            },
+            "example": "profile.png"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "contentMediaType": "image/png"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "contentMediaType": "image/jpeg"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary",
+                "contentMediaType": "image/webp"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "File stored; metadata returned.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              },
+              "Location": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Path to the created resource, including the hosted function mount. Resolve against the API origin."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/File"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "filename": "profile.png",
+                    "contentType": "image/png",
+                    "size": 1024,
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "downloadUrl": "/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/files/{id}": {
+      "get": {
+        "operationId": "getFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Read metadata for a file you own",
+        "description": "Requires files:read for API keys.",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/File"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "filename": "profile.png",
+                    "contentType": "image/png",
+                    "size": 1024,
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "downloadUrl": "/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Delete your file and its metadata",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "description": "Requires files:write for API keys. PostgreSQL and Storage cannot share a transaction; a 503 FILE_DELETION_PENDING means access is already blocked and scheduled cleanup will resume. Retry is safe.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/Deleted"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                    "deleted": true
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/files/{id}/content": {
+      "get": {
+        "operationId": "downloadFile",
+        "tags": [
+          "Files"
+        ],
+        "summary": "Download your file as a binary attachment",
+        "security": [
+          {
+            "bearerAuth": []
+          },
+          {
+            "apiKeyAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/ResourceId"
+          }
+        ],
+        "description": "Requires files:read for API keys. Successful responses contain bytes instead of a JSON envelope. Fetch with authorization, call response.blob(), and create an object URL. A normal image URL cannot attach your Bearer header.",
+        "responses": {
+          "200": {
+            "description": "Private image content.",
+            "headers": {
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                },
+                "example": "attachment; filename=\"profile.png\""
+              },
+              "X-Content-Type-Options": {
+                "schema": {
+                  "type": "string",
+                  "const": "nosniff"
+                }
+              },
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Private downloads must not be cached publicly."
+              }
+            },
+            "content": {
+              "image/png": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/jpeg": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              },
+              "image/webp": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "404": {
+            "$ref": "#/components/responses/Error404"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "operationId": "getProfile",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Read your profile",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                    "email": "learner@example.com",
+                    "name": "API Learner",
+                    "role": "member",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateProfile",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update your display name",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Email, role, passwords, IDs and timestamps cannot be changed here.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProfilePatch"
+              },
+              "example": {
+                "name": "API Learner"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful request.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "$ref": "#/components/schemas/User"
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                    "email": "learner@example.com",
+                    "name": "API Learner",
+                    "role": "member",
+                    "createdAt": "2026-01-01T10:00:00.000Z",
+                    "updatedAt": "2026-01-01T10:00:00.000Z"
+                  },
+                  "requestId": "req_example_01"
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "413": {
+            "$ref": "#/components/responses/Error413"
+          },
+          "415": {
+            "$ref": "#/components/responses/Error415"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/users": {
+      "get": {
+        "operationId": "listUsers",
+        "tags": [
+          "Users"
+        ],
+        "summary": "List users (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Requires an active Bearer session and the admin role. API keys are never sufficient.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Search"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Allowlisted field; arbitrary SQL column names are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt",
+                "name",
+                "email"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "role",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "member",
+                "admin"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of resources. An empty result is successful.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/User"
+                      }
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId",
+                    "meta"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "email": "learner@example.com",
+                      "name": "API Learner",
+                      "role": "member",
+                      "createdAt": "2026-01-01T10:00:00.000Z",
+                      "updatedAt": "2026-01-01T10:00:00.000Z"
+                    }
+                  ],
+                  "requestId": "req_example_01",
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1,
+                    "hasNext": false,
+                    "hasPrevious": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    },
+    "/api/v1/audit-logs": {
+      "get": {
+        "operationId": "listAuditLogs",
+        "tags": [
+          "Audit"
+        ],
+        "summary": "List audit events (admin only)",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "description": "Requires an active Bearer session and the admin role. No token, password, secret, or raw IP is returned. Search q is not supported.",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Page"
+          },
+          {
+            "$ref": "#/components/parameters/Limit"
+          },
+          {
+            "$ref": "#/components/parameters/Order"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "Allowlisted field; arbitrary SQL column names are rejected.",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "createdAt"
+              ],
+              "default": "createdAt"
+            }
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100,
+              "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+              "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+            }
+          },
+          {
+            "name": "actorId",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of resources. An empty result is successful.",
+            "headers": {
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Use this ID when reporting a problem."
+              }
+            },
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "properties": {
+                    "success": {
+                      "type": "boolean",
+                      "const": true
+                    },
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/AuditEvent"
+                      }
+                    },
+                    "requestId": {
+                      "type": "string",
+                      "description": "Correlation ID also sent in X-Request-ID."
+                    },
+                    "meta": {
+                      "$ref": "#/components/schemas/PaginationMeta"
+                    }
+                  },
+                  "required": [
+                    "success",
+                    "data",
+                    "requestId",
+                    "meta"
+                  ]
+                },
+                "example": {
+                  "success": true,
+                  "data": [
+                    {
+                      "id": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                      "actorId": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+                      "action": "project.create",
+                      "resourceType": "projects",
+                      "resourceId": "b70efcda-37b8-47cc-915d-88e34902ae75",
+                      "requestId": "req_example_01",
+                      "metadata": {},
+                      "createdAt": "2026-01-01T10:00:00.000Z"
+                    }
+                  ],
+                  "requestId": "req_example_01",
+                  "meta": {
+                    "page": 1,
+                    "limit": 20,
+                    "total": 1,
+                    "totalPages": 1,
+                    "hasNext": false,
+                    "hasPrevious": false
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "$ref": "#/components/responses/Error400"
+          },
+          "401": {
+            "$ref": "#/components/responses/Error401"
+          },
+          "403": {
+            "$ref": "#/components/responses/Error403"
+          },
+          "422": {
+            "$ref": "#/components/responses/Error422"
+          },
+          "429": {
+            "$ref": "#/components/responses/Error429"
+          },
+          "500": {
+            "$ref": "#/components/responses/Error500"
+          },
+          "503": {
+            "$ref": "#/components/responses/Error503"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Session-backed HS256 access token from register/login/refresh. A signature alone is insufficient: the PostgreSQL session must remain active."
+      },
+      "apiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Trusted server credentials only. One auth method per request. Keys carry their owner and explicit scopes."
+      }
+    },
+    "parameters": {
+      "ResourceId": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string",
+          "format": "uuid"
+        }
+      },
+      "Page": {
+        "name": "page",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 10000,
+          "default": 1
+        },
+        "example": 1
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 100,
+          "default": 20
+        },
+        "example": 20
+      },
+      "Search": {
+        "name": "q",
+        "in": "query",
+        "description": "Literal plain-text search. Omit for no search. SQL wildcard characters have no special meaning.",
+        "schema": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 100,
+          "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+          "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+        },
+        "example": "learning"
+      },
+      "Order": {
+        "name": "order",
+        "in": "query",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "asc",
+            "desc"
+          ],
+          "default": "desc"
+        }
+      }
+    },
+    "schemas": {
+      "User": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "member",
+              "admin"
+            ]
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role",
+          "createdAt",
+          "updatedAt"
+        ],
+        "example": {
+          "id": "2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b",
+          "email": "learner@example.com",
+          "name": "API Learner",
+          "role": "member",
+          "createdAt": "2026-01-01T10:00:00.000Z",
+          "updatedAt": "2026-01-01T10:00:00.000Z"
+        }
+      },
+      "RegisterInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and normalized to lowercase."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]*$",
+            "writeOnly": true,
+            "description": "Passwords are never trimmed or returned. Maximum 256 UTF-8 bytes, no control characters."
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          }
+        },
+        "required": [
+          "email",
+          "password",
+          "name"
+        ]
+      },
+      "LoginInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "maxLength": 254,
+            "description": "Trimmed and normalized to lowercase."
+          },
+          "password": {
+            "type": "string",
+            "minLength": 15,
+            "maxLength": 128,
+            "pattern": "^[^\\u0000-\\u001f\\u007f]*$",
+            "writeOnly": true,
+            "description": "Passwords are never trimmed or returned. Maximum 256 UTF-8 bytes, no control characters."
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "RefreshInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "refreshToken": {
+            "type": "string",
+            "pattern": "^[A-Za-z0-9_-]{43}$",
+            "writeOnly": true
+          }
+        },
+        "required": [
+          "refreshToken"
+        ]
+      },
+      "AuthTokens": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/User"
+          },
+          "accessToken": {
+            "type": "string",
+            "description": "Short-lived JWT. Keep in memory; send as Authorization: Bearer <accessToken>."
+          },
+          "refreshToken": {
+            "type": "string",
+            "description": "Opaque, single-use secret; replaced on refresh."
+          },
+          "tokenType": {
+            "type": "string",
+            "const": "Bearer"
+          },
+          "expiresIn": {
+            "type": "integer",
+            "minimum": 1,
+            "description": "Access lifetime in seconds; default 900."
+          },
+          "sessionExpiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "user",
+          "accessToken",
+          "refreshToken",
+          "tokenType",
+          "expiresIn",
+          "sessionExpiresAt"
+        ]
+      },
+      "Session": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "lastSeenAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "current": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "createdAt",
+          "expiresAt",
+          "lastSeenAt",
+          "current"
+        ]
+      },
+      "Revoked": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "revoked": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "revoked"
+        ]
+      },
+      "Deleted": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deleted": {
+            "type": "boolean",
+            "const": true
+          }
+        },
+        "required": [
+          "id",
+          "deleted"
+        ]
+      },
+      "ApiKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "resources:read",
+                "resources:write",
+                "files:read",
+                "files:write"
+              ]
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "createdAt",
+          "expiresAt"
+        ]
+      },
+      "ApiKeyInput": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "resources:read",
+                "resources:write",
+                "files:read",
+                "files:write"
+              ]
+            },
+            "minItems": 1,
+            "maxItems": 4,
+            "uniqueItems": true
+          },
+          "expiresInDays": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 90,
+            "default": 30
+          }
+        },
+        "required": [
+          "name",
+          "scopes"
+        ]
+      },
+      "CreatedApiKey": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 80,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "prefix": {
+            "type": "string"
+          },
+          "scopes": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "resources:read",
+                "resources:write",
+                "files:read",
+                "files:write"
+              ]
+            }
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expiresAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "key": {
+            "type": "string",
+            "pattern": "^ak_[A-Za-z0-9_-]{43}$",
+            "description": "Copy once. It cannot be retrieved again."
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "prefix",
+          "scopes",
+          "createdAt",
+          "expiresAt",
+          "key"
+        ]
+      },
+      "Project": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ],
+            "default": "active"
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "description",
+          "status",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "ProjectCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ],
+            "default": "active"
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "ProjectPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 120,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 2000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "active",
+              "archived"
+            ]
+          }
+        },
+        "required": [],
+        "minProperties": 1
+      },
+      "Task": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in_progress",
+              "done"
+            ],
+            "default": "todo"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "medium"
+          },
+          "projectId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of a project you own, or null to remove the association."
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Valid calendar date, YYYY-MM-DD, or null."
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "description",
+          "status",
+          "priority",
+          "projectId",
+          "dueDate",
+          "createdAt",
+          "updatedAt"
+        ]
+      },
+      "TaskCreate": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.",
+            "default": ""
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in_progress",
+              "done"
+            ],
+            "default": "todo"
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ],
+            "default": "medium"
+          },
+          "projectId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "ID of a project you own, or null to remove the association."
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "default": null,
+            "description": "Valid calendar date, YYYY-MM-DD, or null."
+          }
+        },
+        "required": [
+          "title"
+        ]
+      },
+      "TaskPatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "description": {
+            "type": "string",
+            "minLength": 0,
+            "maxLength": 4000,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "todo",
+              "in_progress",
+              "done"
+            ]
+          },
+          "priority": {
+            "type": "string",
+            "enum": [
+              "low",
+              "medium",
+              "high"
+            ]
+          },
+          "projectId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "ID of a project you own, or null to remove the association."
+          },
+          "dueDate": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date",
+                "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Valid calendar date, YYYY-MM-DD, or null."
+          }
+        },
+        "required": [],
+        "minProperties": 1
+      },
+      "ProfilePatch": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100,
+            "pattern": "^[^<>\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$",
+            "description": "Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend."
+          }
+        },
+        "required": [
+          "name"
+        ]
+      },
+      "File": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "filename": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "contentType": {
+            "type": "string",
+            "enum": [
+              "image/png",
+              "image/jpeg",
+              "image/webp"
+            ]
+          },
+          "size": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "downloadUrl": {
+            "type": "string",
+            "description": "Relative protected URL: fetch it with your auth header."
+          }
+        },
+        "required": [
+          "id",
+          "filename",
+          "contentType",
+          "size",
+          "createdAt",
+          "downloadUrl"
+        ]
+      },
+      "AuditEvent": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "actorId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "action": {
+            "type": "string"
+          },
+          "resourceType": {
+            "type": "string"
+          },
+          "resourceId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          },
+          "metadata": {
+            "type": "object",
+            "additionalProperties": true
+          },
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "actorId",
+          "action",
+          "resourceType",
+          "resourceId",
+          "requestId",
+          "metadata",
+          "createdAt"
+        ]
+      },
+      "PaginationMeta": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "page": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 10000
+          },
+          "limit": {
+            "type": "integer",
+            "minimum": 1,
+            "maximum": 100
+          },
+          "total": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "totalPages": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "hasNext": {
+            "type": "boolean"
+          },
+          "hasPrevious": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "page",
+          "limit",
+          "total",
+          "totalPages",
+          "hasNext",
+          "hasPrevious"
+        ],
+        "example": {
+          "page": 1,
+          "limit": 20,
+          "total": 21,
+          "totalPages": 2,
+          "hasNext": true,
+          "hasPrevious": false
+        }
+      },
+      "ErrorDetail": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "type": "string"
+          },
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "message"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "const": false
+          },
+          "error": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "code": {
+                "type": "string"
+              },
+              "message": {
+                "type": "string"
+              },
+              "details": {
+                "description": "Validation errors are an array of field/message objects.",
+                "anyOf": [
+                  {
+                    "type": "array",
+                    "items": {
+                      "$ref": "#/components/schemas/ErrorDetail"
+                    }
+                  },
+                  {
+                    "type": "object",
+                    "additionalProperties": true
+                  }
+                ]
+              }
+            },
+            "required": [
+              "code",
+              "message"
+            ]
+          },
+          "requestId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "success",
+          "error",
+          "requestId"
+        ]
+      }
+    },
+    "responses": {
+      "Error400": {
+        "description": "Malformed JSON, a missing required body/header, or an ambiguous request.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INVALID_JSON",
+                "message": "Malformed JSON, a missing required body/header, or an ambiguous request."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error401": {
+        "description": "Missing, invalid, expired, or revoked credentials.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INVALID_CREDENTIALS",
+                "message": "Missing, invalid, expired, or revoked credentials."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error403": {
+        "description": "Insufficient role/scope, disallowed origin, or disabled registration.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "FORBIDDEN",
+                "message": "Insufficient role/scope, disallowed origin, or disabled registration."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error404": {
+        "description": "Resource or route missing. An unowned resource also returns 404.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "NOT_FOUND",
+                "message": "Resource or route missing. An unowned resource also returns 404."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error409": {
+        "description": "Conflicting email, too many active API keys, or a related resource changed during a write.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "EMAIL_IN_USE",
+                "message": "Conflicting email, too many active API keys, or a related resource changed during a write."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error413": {
+        "description": "The request exceeds the configured size limit.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "PAYLOAD_TOO_LARGE",
+                "message": "The request exceeds the configured size limit."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error415": {
+        "description": "Unsupported Content-Type.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "UNSUPPORTED_MEDIA_TYPE",
+                "message": "Unsupported Content-Type."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error422": {
+        "description": "Strict input validation failed, including unknown fields or invalid query parameters.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "VALIDATION_ERROR",
+                "message": "Strict input validation failed, including unknown fields or invalid query parameters.",
+                "details": [
+                  {
+                    "field": "name",
+                    "message": "Required"
+                  }
+                ]
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error429": {
+        "description": "Rate limit reached. Wait according to Retry-After before retrying.",
+        "headers": {
+          "Retry-After": {
+            "schema": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "description": "Seconds to wait before a retry."
+          },
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "RATE_LIMITED",
+                "message": "Rate limit reached. Wait according to Retry-After before retrying."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error500": {
+        "description": "Unexpected server error. Internal details are never exposed.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "INTERNAL_ERROR",
+                "message": "Unexpected server error. Internal details are never exposed."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      },
+      "Error503": {
+        "description": "Required configuration or storage dependency is unavailable.",
+        "headers": {
+          "X-Request-ID": {
+            "schema": {
+              "type": "string"
+            },
+            "description": "Use this ID when reporting a problem."
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Error"
+            },
+            "example": {
+              "success": false,
+              "error": {
+                "code": "SERVICE_UNAVAILABLE",
+                "message": "Required configuration or storage dependency is unavailable."
+              },
+              "requestId": "req_example_01"
+            }
+          }
+        }
+      }
+    }
+  }
+}
