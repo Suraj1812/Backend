@@ -1,0 +1,9 @@
+project_id = "frontend-foundation-api"
+
+[functions.backend]
+verify_jwt = false
+entrypoint = "./functions/backend/index.ts"
+
+[functions.maintenance]
+verify_jwt = false
+entrypoint = "./functions/maintenance/index.ts"
