@@ -1,0 +1,36 @@
+{
+  "name": "frontend-foundation-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.12" },
+  "scripts": {
+    "setup:local": "node scripts/setup-local.mjs",
+    "dev": "wrangler dev",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "npm run typecheck && npm run test && npm run openapi:check && npm run build",
+    "build": "wrangler deploy --dry-run --outdir dist",
+    "db:migrate": "wrangler d1 migrations apply DB --local",
+    "db:seed": "node scripts/seed.mjs",
+    "admin:promote": "node scripts/promote-admin.mjs",
+    "openapi:export": "tsx scripts/export-openapi.ts",
+    "openapi:check": "tsx scripts/export-openapi.ts --check",
+    "deploy:check": "node scripts/check-deployment.mjs",
+    "deploy": "npm run check && npm run deploy:check && wrangler d1 migrations apply DB --remote --env production && wrangler deploy --env production",
+    "format": "prettier --write .",
+    "format:check": "prettier --check ."
+  },
+  "dependencies": { "hono": "4.13.12", "jose": "6.2.12", "zod": "4.6.5" },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.22.0",
+    "@cloudflare/workers-types": "5.20261003.1",
+    "@types/node": "26.6.4",
+    "prettier": "3.8.3",
+    "tsx": "4.21.0",
+    "typescript": "7.0.2",
+    "vitest": "4.1.0",
+    "wrangler": "4.147.0"
+  }
+}
