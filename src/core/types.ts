@@ -1,11 +1,12 @@
+import type { ObjectStore, RateLimiter } from './storage';
+import type { Database } from './database';
 import type { Context } from 'hono';
 
 export interface Env {
-  DB: D1Database;
-  CACHE: KVNamespace;
-  FILES: R2Bucket;
-  API_RATE_LIMITER: RateLimit;
-  AUTH_RATE_LIMITER: RateLimit;
+  DB: Database;
+  FILES: ObjectStore;
+  API_RATE_LIMITER: RateLimiter;
+  AUTH_RATE_LIMITER: RateLimiter;
   ENVIRONMENT: string;
   ALLOWED_ORIGINS: string;
   JWT_ISSUER: string;
