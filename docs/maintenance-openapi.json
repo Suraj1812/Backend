@@ -1,0 +1,88 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Private maintenance operator API",
+    "version": "1.0.0",
+    "description": "Server-only cleanup invoked by Supabase Cron. Never expose its independent secret to a browser."
+  },
+  "servers": [
+    {
+      "url": "https://fvhpmujmbavwdpjoyyal.supabase.co/functions/v1/maintenance"
+    }
+  ],
+  "paths": {
+    "/": {
+      "post": {
+        "operationId": "runMaintenance",
+        "summary": "Run bounded, retry-safe cleanup",
+        "security": [
+          {
+            "maintenanceSecret": []
+          }
+        ],
+        "description": "No query parameters. Send no body or an empty JSON object. Maximum actual body 1024bytes. Origin headers are rejected. Partial progress can occur before503; rerun safely.",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": false
+              },
+              "example": {}
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Cleanup completed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object"
+                },
+                "example": {
+                  "success": true,
+                  "data": {
+                    "completed": true
+                  },
+                  "requestId": "<REQUEST_ID>"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Invalid or missing maintenance credential"
+          },
+          "403": {
+            "description": "Browser Origin is prohibited"
+          },
+          "405": {
+            "description": "Use POST; Allow: POST"
+          },
+          "413": {
+            "description": "Actual body exceeds1024bytes"
+          },
+          "422": {
+            "description": "Body is not an empty JSON object"
+          },
+          "503": {
+            "description": "Configuration or cleanup dependency unavailable"
+          },
+          "415": {
+            "description": "Use application/json for a nonempty body; compressed bodies unsupported"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "maintenanceSecret": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "MAINTENANCE_SECRET from Supabase Secrets, stored encrypted in Vault for Cron. Independent of user JWT/API keys."
+      }
+    }
+  }
+}
