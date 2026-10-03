@@ -1,0 +1,199 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Local frontend · Live API demo</title>
+    <style>
+      :root {
+        font: 16px/1.5 system-ui;
+        color: #172d42;
+        background: #eef3f7;
+      }
+      body {
+        max-width: 900px;
+        margin: 36px auto;
+        padding: 0 22px;
+      }
+      h1 {
+        font-size: 28px;
+        margin-bottom: 8px;
+      }
+      p {
+        color: #526477;
+      }
+      section {
+        background: white;
+        border: 1px solid #dbe4eb;
+        border-radius: 12px;
+        padding: 22px;
+        margin: 18px 0;
+      }
+      label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        margin: 12px 0 4px;
+      }
+      input {
+        box-sizing: border-box;
+        width: 100%;
+        font: inherit;
+        padding: 10px;
+        border: 1px solid #a9b9c8;
+        border-radius: 6px;
+      }
+      button {
+        font: inherit;
+        background: #116f74;
+        color: white;
+        border: 0;
+        border-radius: 6px;
+        padding: 10px 16px;
+        margin: 12px 8px 0 0;
+        cursor: pointer;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: wait;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font:
+          13px/1.6 ui-monospace,
+          monospace;
+        background: #f1f6f8;
+        padding: 16px;
+        border-radius: 6px;
+      }
+      #status {
+        font-weight: 600;
+        color: #0d6b60;
+      }
+      .badge {
+        font-size: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #087d80;
+      }
+      a {
+        color: #0d7479;
+      }
+    </style>
+  </head>
+  <body>
+    <span class="badge">Frontend integration starter</span>
+    <h1>Your local frontend. A live backend.</h1>
+    <p>
+      Serve this file on localhost. Calls go to the live Supabase API; tokens stay in memory and
+      reset on reload.
+    </p>
+    <section>
+      <label for="base">Public API base URL</label
+      ><input
+        id="base"
+        value="https://fvhpmujmbavwdpjoyyal.supabase.co/functions/v1/backend"
+      /><button id="health">Check connection</button>
+      <p id="status" aria-live="polite">Ready to connect</p>
+    </section>
+    <section>
+      <label for="email">Email</label
+      ><input id="email" type="email" autocomplete="username" /><label for="password"
+        >Password (15–128 characters)</label
+      ><input id="password" type="password" autocomplete="current-password" /><button id="register">
+        Create account</button
+      ><button id="login">Sign in</button><button id="logout">Sign out</button>
+      <p id="identity">No active session</p>
+    </section>
+    <section>
+      <label for="project">Project name</label
+      ><input id="project" value="My frontend integration" /><button id="create">
+        Create project</button
+      ><button id="list">Fetch projects</button>
+      <p>Responses below contain resource data and request IDs. Credentials are never displayed.</p>
+      <pre id="result">No requests yet.</pre>
+    </section>
+    <p>
+      Use <a href="../docs/index.html">the complete API reference</a> and
+      <a href="../output/pdf/frontend-api-guide.pdf">the PDF guide</a> for tasks, filters, uploads
+      and scoped server API keys.
+    </p>
+    <script type="module">
+      let session = null;
+      const $ = (id) => document.getElementById(id);
+      async function call(path, method = 'GET', body, auth = true) {
+        const base = $('base').value.trim().replace(/\/$/, '');
+        const url = new URL(base);
+        if (url.protocol !== 'https:' && !['localhost', '127.0.0.1'].includes(url.hostname))
+          throw new Error('Use HTTPS for the live API');
+        if (auth && !session) throw new Error('Sign in first');
+        const response = await fetch(base + path, {
+          method,
+          credentials: 'omit',
+          cache: 'no-store',
+          headers: {
+            ...(body ? { 'Content-Type': 'application/json' } : {}),
+            ...(auth ? { Authorization: `Bearer ${session.accessToken}` } : {}),
+          },
+          ...(body ? { body: JSON.stringify(body) } : {}),
+        });
+        const result = await response.json();
+        if (!response.ok)
+          throw new Error(
+            `${result.error?.code ?? response.status}: ${result.error?.message ?? 'Request failed'}`,
+          );
+        return result;
+      }
+      function show(result) {
+        $('result').textContent = JSON.stringify(result, null, 2);
+        $('status').textContent = 'Live API request succeeded';
+      }
+      function action(id, fn) {
+        $(id).addEventListener('click', async () => {
+          const buttons = [...document.querySelectorAll('button')];
+          buttons.forEach((button) => (button.disabled = true));
+          try {
+            await fn();
+          } catch (error) {
+            $('status').textContent = error.message;
+          } finally {
+            buttons.forEach((button) => (button.disabled = false));
+          }
+        });
+      }
+      action('health', async () => {
+        show(await call('/health', 'GET', undefined, false));
+      });
+      for (const method of ['register', 'login'])
+        action(method, async () => {
+          const body = {
+            email: $('email').value,
+            password: $('password').value,
+            ...(method === 'register' ? { name: 'Frontend learner' } : {}),
+          };
+          const result = await call('/api/v1/auth/' + method, 'POST', body, false);
+          session = result.data;
+          $('password').value = '';
+          $('identity').textContent = `Signed in as ${session.user.name}`;
+          show({
+            success: true,
+            data: { user: session.user, expiresIn: session.expiresIn },
+            requestId: result.requestId,
+          });
+        });
+      action('logout', async () => {
+        await call('/api/v1/auth/logout', 'POST');
+        session = null;
+        $('identity').textContent = 'No active session';
+        show({ signedOut: true });
+      });
+      action('create', async () => {
+        show(await call('/api/v1/projects', 'POST', { name: $('project').value }));
+      });
+      action('list', async () => {
+        show(await call('/api/v1/projects?page=1&limit=10'));
+      });
+    </script>
+  </body>
+</html>
