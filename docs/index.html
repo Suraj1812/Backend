@@ -1,0 +1,4594 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Frontend Foundation API • Reference</title>
+    <link rel="stylesheet" href="./docs.css" />
+  </head>
+  <body>
+    <main>
+      <header>
+        <span class="badge">API v1</span>
+        <h1>Frontend Foundation API</h1>
+        <p>Small, predictable endpoints for learning and building real integrations.</p>
+        <a href="./openapi.json">Download OpenAPI 3.1</a>
+      </header>
+      <section>
+        <h2>Start here</h2>
+        <ol>
+          <li>Register with <code>POST /api/v1/auth/register</code> or log in.</li>
+          <li>
+            Send <code>Authorization: Bearer &lt;accessToken&gt;</code> on protected requests.
+          </li>
+          <li>Read <code>data</code> on success and <code>error.code</code> on failure.</li>
+          <li>
+            For lists use <code>?page=1&amp;limit=20&amp;order=desc</code>. Follow
+            <code>meta.hasNext</code>.
+          </li>
+          <li>Refresh once with the latest refresh token. A reused token revokes the session.</li>
+        </ol>
+        <p>
+          Tokens stay in memory in a browser. API keys belong in trusted servers. File content is a
+          private binary download; other endpoints use JSON.
+        </p>
+        <h3>Response pattern</h3>
+        <pre>
+{ "success": true, "data": { ... }, "requestId": "..." }
+{ "success": false, "error": { "code": "VALIDATION_ERROR", "message": "..." }, "requestId": "..." }</pre
+        >
+      </section>
+      <section>
+        <h2>Endpoints (35)</h2>
+        <details>
+          <summary><strong>GET</strong> <code>/health</code> — Check API liveness</summary>
+          <p></p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;status&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;ok&quot;
+                },
+                &quot;version&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;1.0.0&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;status&quot;,
+                &quot;version&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;status&quot;: &quot;ok&quot;,
+            &quot;version&quot;: &quot;1.0.0&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary><strong>GET</strong> <code>/ready</code> — Check database readiness</summary>
+          <p>
+            Runs a lightweight PostgreSQL query. A failed dependency returns 503 without
+            infrastructure details.
+          </p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;status&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;ready&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;status&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;status&quot;: &quot;ready&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/openapi.json</code> — Download this OpenAPI 3.1 document
+          </summary>
+          <p></p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;The OpenAPI document itself (no envelope).&quot;,
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: true
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary><strong>GET</strong> <code>/docs</code> — Read the API reference</summary>
+          <p></p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Self-contained HTML locally; the free Supabase domain rewrites HTML to text/plain. Use the PDF or portable docs/index.html for the formatted reference. No JSON envelope.&quot;,
+    &quot;content&quot;: {
+      &quot;text/html&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      },
+      &quot;text/plain&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/docs.css</code> — Read the API reference stylesheet
+          </summary>
+          <p></p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Local CSS stylesheet (no JSON envelope).&quot;,
+    &quot;content&quot;: {
+      &quot;text/css&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1</code> — Discover API links and version
+          </summary>
+          <p></p>
+          <p>Authentication: Public</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;version&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;v1&quot;
+                },
+                &quot;documentation&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;/docs&quot;
+                },
+                &quot;openapi&quot;: {
+                  &quot;type&quot;: &quot;string&quot;,
+                  &quot;const&quot;: &quot;/openapi.json&quot;
+                },
+                &quot;resources&quot;: {
+                  &quot;type&quot;: &quot;array&quot;,
+                  &quot;items&quot;: {
+                    &quot;type&quot;: &quot;string&quot;
+                  }
+                }
+              },
+              &quot;required&quot;: [
+                &quot;version&quot;,
+                &quot;documentation&quot;,
+                &quot;openapi&quot;,
+                &quot;resources&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;version&quot;: &quot;v1&quot;,
+            &quot;documentation&quot;: &quot;/docs&quot;,
+            &quot;openapi&quot;: &quot;/openapi.json&quot;,
+            &quot;resources&quot;: [
+              &quot;example&quot;
+            ]
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/auth/register</code> — Register a member and create
+            a session
+          </summary>
+          <p>
+            Public registration can be disabled by configuration. Unknown fields, including role,
+            are rejected. New accounts always have the member role. Registration name is limited to
+            80 characters.
+          </p>
+          <p>Authentication: Public</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/RegisterInput&quot;
+      },
+      &quot;example&quot;: {
+        &quot;email&quot;: &quot;learner@example.com&quot;,
+        &quot;name&quot;: &quot;API Learner&quot;,
+        &quot;password&quot;: &quot;use-a-unique-long-password&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;201&quot;: {
+    &quot;description&quot;: &quot;Account and session created.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/AuthTokens&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;user&quot;: {
+              &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;email&quot;: &quot;learner@example.com&quot;,
+              &quot;name&quot;: &quot;API Learner&quot;,
+              &quot;role&quot;: &quot;member&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            },
+            &quot;accessToken&quot;: &quot;eyJ...example-access-token&quot;,
+            &quot;refreshToken&quot;: &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;,
+            &quot;tokenType&quot;: &quot;Bearer&quot;,
+            &quot;expiresIn&quot;: 900,
+            &quot;sessionExpiresAt&quot;: &quot;2026-01-08T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;409&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error409&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/auth/login</code> — Create a session using email and
+            password
+          </summary>
+          <p>
+            A user may have at most 20 active sessions; creating a new session beyond the cap
+            atomically revokes the oldest session.
+          </p>
+          <p>Authentication: Public</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/LoginInput&quot;
+      },
+      &quot;example&quot;: {
+        &quot;email&quot;: &quot;learner@example.com&quot;,
+        &quot;password&quot;: &quot;use-a-unique-long-password&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/AuthTokens&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;user&quot;: {
+              &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;email&quot;: &quot;learner@example.com&quot;,
+              &quot;name&quot;: &quot;API Learner&quot;,
+              &quot;role&quot;: &quot;member&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            },
+            &quot;accessToken&quot;: &quot;eyJ...example-access-token&quot;,
+            &quot;refreshToken&quot;: &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;,
+            &quot;tokenType&quot;: &quot;Bearer&quot;,
+            &quot;expiresIn&quot;: 900,
+            &quot;sessionExpiresAt&quot;: &quot;2026-01-08T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/auth/refresh</code> — Rotate a refresh token and
+            obtain a new access token
+          </summary>
+          <p>
+            Send the refresh token in JSON. It can be used once. Store the returned replacement.
+            Coordinate refreshes in the frontend so parallel requests do not race. An invalid,
+            expired, or reused token returns 401. Replay of a consumed token revokes the entire
+            session.
+          </p>
+          <p>Authentication: Public</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/RefreshInput&quot;
+      },
+      &quot;example&quot;: {
+        &quot;refreshToken&quot;: &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/AuthTokens&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;user&quot;: {
+              &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;email&quot;: &quot;learner@example.com&quot;,
+              &quot;name&quot;: &quot;API Learner&quot;,
+              &quot;role&quot;: &quot;member&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            },
+            &quot;accessToken&quot;: &quot;eyJ...example-access-token&quot;,
+            &quot;refreshToken&quot;: &quot;AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;,
+            &quot;tokenType&quot;: &quot;Bearer&quot;,
+            &quot;expiresIn&quot;: 900,
+            &quot;sessionExpiresAt&quot;: &quot;2026-01-08T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/auth/logout</code> — Revoke the current session
+          </summary>
+          <p>
+            Send the current access token. No request body is needed. Its access and refresh tokens
+            stop authorizing requests after revocation.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Revoked&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;revoked&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/auth/me</code> — Get the current authenticated user
+          </summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Current user.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;user&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/User&quot;
+                }
+              },
+              &quot;required&quot;: [
+                &quot;user&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;user&quot;: {
+              &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;email&quot;: &quot;learner@example.com&quot;,
+              &quot;name&quot;: &quot;API Learner&quot;,
+              &quot;role&quot;: &quot;member&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            }
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/auth/sessions</code> — List your active sessions
+          </summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;sessions&quot;: {
+                  &quot;type&quot;: &quot;array&quot;,
+                  &quot;items&quot;: {
+                    &quot;$ref&quot;: &quot;#/components/schemas/Session&quot;
+                  }
+                }
+              },
+              &quot;required&quot;: [
+                &quot;sessions&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;sessions&quot;: [
+              {
+                &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+                &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+                &quot;expiresAt&quot;: &quot;2026-01-08T10:00:00.000Z&quot;,
+                &quot;lastSeenAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+                &quot;current&quot;: true
+              }
+            ]
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>DELETE</strong> <code>/api/v1/auth/sessions/{id}</code> — Revoke one of your
+            sessions
+          </summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Revoked&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;revoked&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/api-keys</code> — List your API keys without their
+            secrets
+          </summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;object&quot;,
+              &quot;additionalProperties&quot;: false,
+              &quot;properties&quot;: {
+                &quot;items&quot;: {
+                  &quot;type&quot;: &quot;array&quot;,
+                  &quot;items&quot;: {
+                    &quot;$ref&quot;: &quot;#/components/schemas/ApiKey&quot;
+                  }
+                }
+              },
+              &quot;required&quot;: [
+                &quot;items&quot;
+              ]
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;items&quot;: [
+              {
+                &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+                &quot;name&quot;: &quot;Server integration&quot;,
+                &quot;prefix&quot;: &quot;ak_AAAAAAAA&quot;,
+                &quot;scopes&quot;: [
+                  &quot;resources:read&quot;
+                ],
+                &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+                &quot;expiresAt&quot;: &quot;2026-01-31T10:00:00.000Z&quot;
+              }
+            ]
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/api-keys</code> — Create a scoped key for a trusted
+            server
+          </summary>
+          <p>
+            The key secret is returned exactly once. Maximum 20 active keys per user. Copy it to
+            your server secret store. Never put it in Vite/Next.js public variables, browser code, a
+            mobile bundle, or a repository.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/ApiKeyInput&quot;
+      },
+      &quot;example&quot;: {
+        &quot;name&quot;: &quot;Server integration&quot;,
+        &quot;scopes&quot;: [
+          &quot;resources:read&quot;
+        ],
+        &quot;expiresInDays&quot;: 30
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;201&quot;: {
+    &quot;description&quot;: &quot;API key created; secret returned once.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/CreatedApiKey&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;name&quot;: &quot;Server integration&quot;,
+            &quot;prefix&quot;: &quot;ak_AAAAAAAA&quot;,
+            &quot;scopes&quot;: [
+              &quot;resources:read&quot;
+            ],
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;expiresAt&quot;: &quot;2026-01-31T10:00:00.000Z&quot;,
+            &quot;key&quot;: &quot;ak_AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;409&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error409&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>DELETE</strong> <code>/api/v1/api-keys/{id}</code> — Revoke your API key
+          </summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Revoked&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;revoked&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/projects</code> — List, filter, search, and sort your
+            projects
+          </summary>
+          <p>
+            Requires resources:read for API keys. Search matches project name and description as
+            literal text. Other users’ projects never appear.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Page&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Limit&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Search&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Order&quot;
+  },
+  {
+    &quot;name&quot;: &quot;sort&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;description&quot;: &quot;Allowlisted field; arbitrary SQL column names are rejected.&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;createdAt&quot;,
+        &quot;updatedAt&quot;,
+        &quot;name&quot;
+      ],
+      &quot;default&quot;: &quot;createdAt&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;status&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;active&quot;,
+        &quot;archived&quot;
+      ]
+    }
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;A page of resources. An empty result is successful.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;array&quot;,
+              &quot;items&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/Project&quot;
+              }
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            },
+            &quot;meta&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PaginationMeta&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;,
+            &quot;meta&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: [
+            {
+              &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+              &quot;name&quot;: &quot;Learning API integration&quot;,
+              &quot;description&quot;: &quot;Practice fetching a real API&quot;,
+              &quot;status&quot;: &quot;active&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            }
+          ],
+          &quot;requestId&quot;: &quot;req_example_01&quot;,
+          &quot;meta&quot;: {
+            &quot;page&quot;: 1,
+            &quot;limit&quot;: 20,
+            &quot;total&quot;: 1,
+            &quot;totalPages&quot;: 1,
+            &quot;hasNext&quot;: false,
+            &quot;hasPrevious&quot;: false
+          }
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary><strong>POST</strong> <code>/api/v1/projects</code> — Create a project</summary>
+          <p>Requires resources:write for API keys.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/ProjectCreate&quot;
+      },
+      &quot;example&quot;: {
+        &quot;name&quot;: &quot;Learning API integration&quot;,
+        &quot;description&quot;: &quot;Practice fetching a real API&quot;,
+        &quot;status&quot;: &quot;active&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;201&quot;: {
+    &quot;description&quot;: &quot;Project created.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      },
+      &quot;Location&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Path to the created resource, including the hosted function mount. Resolve against the API origin.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Project&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;name&quot;: &quot;Learning API integration&quot;,
+            &quot;description&quot;: &quot;Practice fetching a real API&quot;,
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/projects/{id}</code> — Read a project you own
+          </summary>
+          <p>Requires resources:read for API keys.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Project&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;name&quot;: &quot;Learning API integration&quot;,
+            &quot;description&quot;: &quot;Practice fetching a real API&quot;,
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>PATCH</strong> <code>/api/v1/projects/{id}</code> — Update supplied project
+            fields
+          </summary>
+          <p>Requires resources:write for API keys. Omitted fields remain unchanged.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/ProjectPatch&quot;
+      },
+      &quot;example&quot;: {
+        &quot;status&quot;: &quot;archived&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Project&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;name&quot;: &quot;Learning API integration&quot;,
+            &quot;description&quot;: &quot;Practice fetching a real API&quot;,
+            &quot;status&quot;: &quot;active&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>DELETE</strong> <code>/api/v1/projects/{id}</code> — Delete a project you own
+          </summary>
+          <p>
+            Associated tasks remain; their projectId becomes null. Requires resources:write for API
+            keys.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Deleted&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;deleted&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/tasks</code> — List, filter, search, and sort your
+            tasks
+          </summary>
+          <p>
+            Requires resources:read for API keys. Search matches task title and description as
+            literal text.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Page&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Limit&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Search&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Order&quot;
+  },
+  {
+    &quot;name&quot;: &quot;sort&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;description&quot;: &quot;Allowlisted field; arbitrary SQL column names are rejected.&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;createdAt&quot;,
+        &quot;updatedAt&quot;,
+        &quot;title&quot;,
+        &quot;dueDate&quot;
+      ],
+      &quot;default&quot;: &quot;createdAt&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;status&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;todo&quot;,
+        &quot;in_progress&quot;,
+        &quot;done&quot;
+      ]
+    }
+  },
+  {
+    &quot;name&quot;: &quot;priority&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;low&quot;,
+        &quot;medium&quot;,
+        &quot;high&quot;
+      ]
+    }
+  },
+  {
+    &quot;name&quot;: &quot;projectId&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;format&quot;: &quot;uuid&quot;
+    }
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;A page of resources. An empty result is successful.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;array&quot;,
+              &quot;items&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/Task&quot;
+              }
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            },
+            &quot;meta&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PaginationMeta&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;,
+            &quot;meta&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: [
+            {
+              &quot;id&quot;: &quot;2fdd0cd8-74e6-4776-b509-f312dd442ae2&quot;,
+              &quot;title&quot;: &quot;Build a project list&quot;,
+              &quot;description&quot;: &quot;Fetch the first page&quot;,
+              &quot;status&quot;: &quot;todo&quot;,
+              &quot;priority&quot;: &quot;medium&quot;,
+              &quot;projectId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+              &quot;dueDate&quot;: &quot;2026-10-31&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            }
+          ],
+          &quot;requestId&quot;: &quot;req_example_01&quot;,
+          &quot;meta&quot;: {
+            &quot;page&quot;: 1,
+            &quot;limit&quot;: 20,
+            &quot;total&quot;: 1,
+            &quot;totalPages&quot;: 1,
+            &quot;hasNext&quot;: false,
+            &quot;hasPrevious&quot;: false
+          }
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/tasks</code> — Create a task, optionally within your
+            project
+          </summary>
+          <p>Requires resources:write for API keys. projectId must identify a project you own.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/TaskCreate&quot;
+      },
+      &quot;example&quot;: {
+        &quot;title&quot;: &quot;Build a project list&quot;,
+        &quot;description&quot;: &quot;Fetch the first page&quot;,
+        &quot;status&quot;: &quot;todo&quot;,
+        &quot;priority&quot;: &quot;medium&quot;,
+        &quot;projectId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+        &quot;dueDate&quot;: &quot;2026-10-31&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;201&quot;: {
+    &quot;description&quot;: &quot;Task created.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      },
+      &quot;Location&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Path to the created resource, including the hosted function mount. Resolve against the API origin.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Task&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;2fdd0cd8-74e6-4776-b509-f312dd442ae2&quot;,
+            &quot;title&quot;: &quot;Build a project list&quot;,
+            &quot;description&quot;: &quot;Fetch the first page&quot;,
+            &quot;status&quot;: &quot;todo&quot;,
+            &quot;priority&quot;: &quot;medium&quot;,
+            &quot;projectId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;dueDate&quot;: &quot;2026-10-31&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;409&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error409&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/tasks/{id}</code> — Read a task you own
+          </summary>
+          <p>Requires resources:read for API keys.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Task&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;2fdd0cd8-74e6-4776-b509-f312dd442ae2&quot;,
+            &quot;title&quot;: &quot;Build a project list&quot;,
+            &quot;description&quot;: &quot;Fetch the first page&quot;,
+            &quot;status&quot;: &quot;todo&quot;,
+            &quot;priority&quot;: &quot;medium&quot;,
+            &quot;projectId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;dueDate&quot;: &quot;2026-10-31&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>PATCH</strong> <code>/api/v1/tasks/{id}</code> — Update supplied task fields
+          </summary>
+          <p>Requires resources:write for API keys. Omitted fields remain unchanged.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/TaskPatch&quot;
+      },
+      &quot;example&quot;: {
+        &quot;status&quot;: &quot;done&quot;,
+        &quot;projectId&quot;: null
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Task&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;2fdd0cd8-74e6-4776-b509-f312dd442ae2&quot;,
+            &quot;title&quot;: &quot;Build a project list&quot;,
+            &quot;description&quot;: &quot;Fetch the first page&quot;,
+            &quot;status&quot;: &quot;todo&quot;,
+            &quot;priority&quot;: &quot;medium&quot;,
+            &quot;projectId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;dueDate&quot;: &quot;2026-10-31&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;409&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error409&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>DELETE</strong> <code>/api/v1/tasks/{id}</code> — Delete a task you own
+          </summary>
+          <p>Requires resources:write for API keys.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Deleted&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;deleted&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/files</code> — List metadata for your private files
+          </summary>
+          <p>Requires files:read for API keys. Search matches filename as literal text.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Page&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Limit&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Search&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Order&quot;
+  },
+  {
+    &quot;name&quot;: &quot;sort&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;description&quot;: &quot;Allowlisted field; arbitrary SQL column names are rejected.&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;createdAt&quot;,
+        &quot;filename&quot;,
+        &quot;size&quot;
+      ],
+      &quot;default&quot;: &quot;createdAt&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;contentType&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;image/png&quot;,
+        &quot;image/jpeg&quot;,
+        &quot;image/webp&quot;
+      ]
+    }
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;A page of resources. An empty result is successful.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;array&quot;,
+              &quot;items&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/File&quot;
+              }
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            },
+            &quot;meta&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PaginationMeta&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;,
+            &quot;meta&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: [
+            {
+              &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+              &quot;filename&quot;: &quot;profile.png&quot;,
+              &quot;contentType&quot;: &quot;image/png&quot;,
+              &quot;size&quot;: 1024,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;downloadUrl&quot;: &quot;/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content&quot;
+            }
+          ],
+          &quot;requestId&quot;: &quot;req_example_01&quot;,
+          &quot;meta&quot;: {
+            &quot;page&quot;: 1,
+            &quot;limit&quot;: 20,
+            &quot;total&quot;: 1,
+            &quot;totalPages&quot;: 1,
+            &quot;hasNext&quot;: false,
+            &quot;hasPrevious&quot;: false
+          }
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>POST</strong> <code>/api/v1/files</code> — Upload a raster image as raw bytes
+          </summary>
+          <p>
+            Requires files:write for API keys. Send the File/Blob directly, not JSON, base64, or
+            multipart FormData. MIME, extension, signature, image structure and dimensions are
+            checked. Upload size is limited by MAX_UPLOAD_BYTES; default 5 MiB. Maximum 40 million
+            pixels and 16384 pixels per side. APNG and animated WebP are rejected. Files are private
+            in Storage.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;name&quot;: &quot;X-File-Name&quot;,
+    &quot;in&quot;: &quot;header&quot;,
+    &quot;required&quot;: true,
+    &quot;description&quot;: &quot;Start with an ASCII letter/digit; remaining characters may be ASCII letters, digits, spaces, dots, underscores, and hyphens; no paths. Spaces are normalized to underscores. Extension must match MIME (case-insensitive).&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;maxLength&quot;: 120,
+      &quot;pattern&quot;: &quot;^[A-Za-z0-9][A-Za-z0-9 ._-]*\\.([Pp][Nn][Gg]|[Jj][Pp][Gg]|[Jj][Pp][Ee][Gg]|[Ww][Ee][Bb][Pp])$&quot;
+    },
+    &quot;example&quot;: &quot;profile.png&quot;
+  }
+]</pre
+          >
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;image/png&quot;: {
+      &quot;schema&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;binary&quot;,
+        &quot;contentMediaType&quot;: &quot;image/png&quot;
+      }
+    },
+    &quot;image/jpeg&quot;: {
+      &quot;schema&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;binary&quot;,
+        &quot;contentMediaType&quot;: &quot;image/jpeg&quot;
+      }
+    },
+    &quot;image/webp&quot;: {
+      &quot;schema&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;binary&quot;,
+        &quot;contentMediaType&quot;: &quot;image/webp&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;201&quot;: {
+    &quot;description&quot;: &quot;File stored; metadata returned.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      },
+      &quot;Location&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Path to the created resource, including the hosted function mount. Resolve against the API origin.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/File&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;filename&quot;: &quot;profile.png&quot;,
+            &quot;contentType&quot;: &quot;image/png&quot;,
+            &quot;size&quot;: 1024,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;downloadUrl&quot;: &quot;/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/files/{id}</code> — Read metadata for a file you own
+          </summary>
+          <p>Requires files:read for API keys.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/File&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;filename&quot;: &quot;profile.png&quot;,
+            &quot;contentType&quot;: &quot;image/png&quot;,
+            &quot;size&quot;: 1024,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;downloadUrl&quot;: &quot;/api/v1/files/b70efcda-37b8-47cc-915d-88e34902ae75/content&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>DELETE</strong> <code>/api/v1/files/{id}</code> — Delete your file and its
+            metadata
+          </summary>
+          <p>
+            Requires files:write for API keys. PostgreSQL and Storage cannot share a transaction; a
+            503 FILE_DELETION_PENDING means access is already blocked and scheduled cleanup will
+            resume. Retry is safe.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/Deleted&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+            &quot;deleted&quot;: true
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/files/{id}/content</code> — Download your file as a
+            binary attachment
+          </summary>
+          <p>
+            Requires files:read for API keys. Successful responses contain bytes instead of a JSON
+            envelope. Fetch with authorization, call response.blob(), and create an object URL. A
+            normal image URL cannot attach your Bearer header.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]},{&quot;apiKeyAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/ResourceId&quot;
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Private image content.&quot;,
+    &quot;headers&quot;: {
+      &quot;Content-Disposition&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;example&quot;: &quot;attachment; filename=\&quot;profile.png\&quot;&quot;
+      },
+      &quot;X-Content-Type-Options&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;const&quot;: &quot;nosniff&quot;
+        }
+      },
+      &quot;Cache-Control&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Private downloads must not be cached publicly.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;image/png&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;format&quot;: &quot;binary&quot;
+        }
+      },
+      &quot;image/jpeg&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;format&quot;: &quot;binary&quot;
+        }
+      },
+      &quot;image/webp&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;format&quot;: &quot;binary&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;404&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error404&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary><strong>GET</strong> <code>/api/v1/users/me</code> — Read your profile</summary>
+          <p></p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/User&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+            &quot;email&quot;: &quot;learner@example.com&quot;,
+            &quot;name&quot;: &quot;API Learner&quot;,
+            &quot;role&quot;: &quot;member&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>PATCH</strong> <code>/api/v1/users/me</code> — Update your display name
+          </summary>
+          <p>Email, role, passwords, IDs and timestamps cannot be changed here.</p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Request</h3>
+          <pre>
+{
+  &quot;required&quot;: true,
+  &quot;content&quot;: {
+    &quot;application/json&quot;: {
+      &quot;schema&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/ProfilePatch&quot;
+      },
+      &quot;example&quot;: {
+        &quot;name&quot;: &quot;API Learner&quot;
+      }
+    }
+  }
+}</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;Successful request.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/User&quot;
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: {
+            &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+            &quot;email&quot;: &quot;learner@example.com&quot;,
+            &quot;name&quot;: &quot;API Learner&quot;,
+            &quot;role&quot;: &quot;member&quot;,
+            &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+            &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+          },
+          &quot;requestId&quot;: &quot;req_example_01&quot;
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;413&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error413&quot;
+  },
+  &quot;415&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error415&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/users</code> — List users (admin only)
+          </summary>
+          <p>
+            Requires an active Bearer session and the admin role. API keys are never sufficient.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Page&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Limit&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Search&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Order&quot;
+  },
+  {
+    &quot;name&quot;: &quot;sort&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;description&quot;: &quot;Allowlisted field; arbitrary SQL column names are rejected.&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;createdAt&quot;,
+        &quot;name&quot;,
+        &quot;email&quot;
+      ],
+      &quot;default&quot;: &quot;createdAt&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;role&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;member&quot;,
+        &quot;admin&quot;
+      ]
+    }
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;A page of resources. An empty result is successful.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;array&quot;,
+              &quot;items&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/User&quot;
+              }
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            },
+            &quot;meta&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PaginationMeta&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;,
+            &quot;meta&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: [
+            {
+              &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;email&quot;: &quot;learner@example.com&quot;,
+              &quot;name&quot;: &quot;API Learner&quot;,
+              &quot;role&quot;: &quot;member&quot;,
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+              &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            }
+          ],
+          &quot;requestId&quot;: &quot;req_example_01&quot;,
+          &quot;meta&quot;: {
+            &quot;page&quot;: 1,
+            &quot;limit&quot;: 20,
+            &quot;total&quot;: 1,
+            &quot;totalPages&quot;: 1,
+            &quot;hasNext&quot;: false,
+            &quot;hasPrevious&quot;: false
+          }
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+        <details>
+          <summary>
+            <strong>GET</strong> <code>/api/v1/audit-logs</code> — List audit events (admin only)
+          </summary>
+          <p>
+            Requires an active Bearer session and the admin role. No token, password, secret, or raw
+            IP is returned. Search q is not supported.
+          </p>
+          <p>Authentication: [{&quot;bearerAuth&quot;:[]}]</p>
+          <h3>Parameters</h3>
+          <pre>
+[
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Page&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Limit&quot;
+  },
+  {
+    &quot;$ref&quot;: &quot;#/components/parameters/Order&quot;
+  },
+  {
+    &quot;name&quot;: &quot;sort&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;description&quot;: &quot;Allowlisted field; arbitrary SQL column names are rejected.&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;enum&quot;: [
+        &quot;createdAt&quot;
+      ],
+      &quot;default&quot;: &quot;createdAt&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;action&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;minLength&quot;: 1,
+      &quot;maxLength&quot;: 100,
+      &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+      &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+    }
+  },
+  {
+    &quot;name&quot;: &quot;actorId&quot;,
+    &quot;in&quot;: &quot;query&quot;,
+    &quot;schema&quot;: {
+      &quot;type&quot;: &quot;string&quot;,
+      &quot;format&quot;: &quot;uuid&quot;
+    }
+  }
+]</pre
+          >
+          <h3>Responses</h3>
+          <pre>
+{
+  &quot;200&quot;: {
+    &quot;description&quot;: &quot;A page of resources. An empty result is successful.&quot;,
+    &quot;headers&quot;: {
+      &quot;X-Request-ID&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;string&quot;
+        },
+        &quot;description&quot;: &quot;Use this ID when reporting a problem.&quot;
+      }
+    },
+    &quot;content&quot;: {
+      &quot;application/json&quot;: {
+        &quot;schema&quot;: {
+          &quot;type&quot;: &quot;object&quot;,
+          &quot;additionalProperties&quot;: false,
+          &quot;properties&quot;: {
+            &quot;success&quot;: {
+              &quot;type&quot;: &quot;boolean&quot;,
+              &quot;const&quot;: true
+            },
+            &quot;data&quot;: {
+              &quot;type&quot;: &quot;array&quot;,
+              &quot;items&quot;: {
+                &quot;$ref&quot;: &quot;#/components/schemas/AuditEvent&quot;
+              }
+            },
+            &quot;requestId&quot;: {
+              &quot;type&quot;: &quot;string&quot;,
+              &quot;description&quot;: &quot;Correlation ID also sent in X-Request-ID.&quot;
+            },
+            &quot;meta&quot;: {
+              &quot;$ref&quot;: &quot;#/components/schemas/PaginationMeta&quot;
+            }
+          },
+          &quot;required&quot;: [
+            &quot;success&quot;,
+            &quot;data&quot;,
+            &quot;requestId&quot;,
+            &quot;meta&quot;
+          ]
+        },
+        &quot;example&quot;: {
+          &quot;success&quot;: true,
+          &quot;data&quot;: [
+            {
+              &quot;id&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+              &quot;actorId&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+              &quot;action&quot;: &quot;project.create&quot;,
+              &quot;resourceType&quot;: &quot;projects&quot;,
+              &quot;resourceId&quot;: &quot;b70efcda-37b8-47cc-915d-88e34902ae75&quot;,
+              &quot;requestId&quot;: &quot;req_example_01&quot;,
+              &quot;metadata&quot;: {},
+              &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+            }
+          ],
+          &quot;requestId&quot;: &quot;req_example_01&quot;,
+          &quot;meta&quot;: {
+            &quot;page&quot;: 1,
+            &quot;limit&quot;: 20,
+            &quot;total&quot;: 1,
+            &quot;totalPages&quot;: 1,
+            &quot;hasNext&quot;: false,
+            &quot;hasPrevious&quot;: false
+          }
+        }
+      }
+    }
+  },
+  &quot;400&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error400&quot;
+  },
+  &quot;401&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error401&quot;
+  },
+  &quot;403&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error403&quot;
+  },
+  &quot;422&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error422&quot;
+  },
+  &quot;429&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error429&quot;
+  },
+  &quot;500&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error500&quot;
+  },
+  &quot;503&quot;: {
+    &quot;$ref&quot;: &quot;#/components/responses/Error503&quot;
+  }
+}</pre
+          >
+        </details>
+      </section>
+      <section>
+        <h2>Schemas</h2>
+        <pre>
+{
+  &quot;User&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;email&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;email&quot;
+      },
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 100,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;role&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;member&quot;,
+          &quot;admin&quot;
+        ]
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;updatedAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;email&quot;,
+      &quot;name&quot;,
+      &quot;role&quot;,
+      &quot;createdAt&quot;,
+      &quot;updatedAt&quot;
+    ],
+    &quot;example&quot;: {
+      &quot;id&quot;: &quot;2cd65e90-ce9f-42e4-a7f4-1e6dc8dba84b&quot;,
+      &quot;email&quot;: &quot;learner@example.com&quot;,
+      &quot;name&quot;: &quot;API Learner&quot;,
+      &quot;role&quot;: &quot;member&quot;,
+      &quot;createdAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;,
+      &quot;updatedAt&quot;: &quot;2026-01-01T10:00:00.000Z&quot;
+    }
+  },
+  &quot;RegisterInput&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;email&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;email&quot;,
+        &quot;maxLength&quot;: 254,
+        &quot;description&quot;: &quot;Trimmed and normalized to lowercase.&quot;
+      },
+      &quot;password&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 15,
+        &quot;maxLength&quot;: 128,
+        &quot;pattern&quot;: &quot;^[^\\u0000-\\u001f\\u007f]*$&quot;,
+        &quot;writeOnly&quot;: true,
+        &quot;description&quot;: &quot;Passwords are never trimmed or returned. Maximum 256 UTF-8 bytes, no control characters.&quot;
+      },
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 80,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;email&quot;,
+      &quot;password&quot;,
+      &quot;name&quot;
+    ]
+  },
+  &quot;LoginInput&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;email&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;email&quot;,
+        &quot;maxLength&quot;: 254,
+        &quot;description&quot;: &quot;Trimmed and normalized to lowercase.&quot;
+      },
+      &quot;password&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 15,
+        &quot;maxLength&quot;: 128,
+        &quot;pattern&quot;: &quot;^[^\\u0000-\\u001f\\u007f]*$&quot;,
+        &quot;writeOnly&quot;: true,
+        &quot;description&quot;: &quot;Passwords are never trimmed or returned. Maximum 256 UTF-8 bytes, no control characters.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;email&quot;,
+      &quot;password&quot;
+    ]
+  },
+  &quot;RefreshInput&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;refreshToken&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;pattern&quot;: &quot;^[A-Za-z0-9_-]{43}$&quot;,
+        &quot;writeOnly&quot;: true
+      }
+    },
+    &quot;required&quot;: [
+      &quot;refreshToken&quot;
+    ]
+  },
+  &quot;AuthTokens&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;user&quot;: {
+        &quot;$ref&quot;: &quot;#/components/schemas/User&quot;
+      },
+      &quot;accessToken&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;description&quot;: &quot;Short-lived JWT. Keep in memory; send as Authorization: Bearer &lt;accessToken&gt;.&quot;
+      },
+      &quot;refreshToken&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;description&quot;: &quot;Opaque, single-use secret; replaced on refresh.&quot;
+      },
+      &quot;tokenType&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;const&quot;: &quot;Bearer&quot;
+      },
+      &quot;expiresIn&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 1,
+        &quot;description&quot;: &quot;Access lifetime in seconds; default 900.&quot;
+      },
+      &quot;sessionExpiresAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;user&quot;,
+      &quot;accessToken&quot;,
+      &quot;refreshToken&quot;,
+      &quot;tokenType&quot;,
+      &quot;expiresIn&quot;,
+      &quot;sessionExpiresAt&quot;
+    ]
+  },
+  &quot;Session&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;expiresAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;lastSeenAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;current&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;createdAt&quot;,
+      &quot;expiresAt&quot;,
+      &quot;lastSeenAt&quot;,
+      &quot;current&quot;
+    ]
+  },
+  &quot;Revoked&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;revoked&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;,
+        &quot;const&quot;: true
+      }
+    },
+    &quot;required&quot;: [
+      &quot;revoked&quot;
+    ]
+  },
+  &quot;Deleted&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;deleted&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;,
+        &quot;const&quot;: true
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;deleted&quot;
+    ]
+  },
+  &quot;ApiKey&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 80,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;prefix&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;scopes&quot;: {
+        &quot;type&quot;: &quot;array&quot;,
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;resources:read&quot;,
+            &quot;resources:write&quot;,
+            &quot;files:read&quot;,
+            &quot;files:write&quot;
+          ]
+        }
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;expiresAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;name&quot;,
+      &quot;prefix&quot;,
+      &quot;scopes&quot;,
+      &quot;createdAt&quot;,
+      &quot;expiresAt&quot;
+    ]
+  },
+  &quot;ApiKeyInput&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 80,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;scopes&quot;: {
+        &quot;type&quot;: &quot;array&quot;,
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;resources:read&quot;,
+            &quot;resources:write&quot;,
+            &quot;files:read&quot;,
+            &quot;files:write&quot;
+          ]
+        },
+        &quot;minItems&quot;: 1,
+        &quot;maxItems&quot;: 4,
+        &quot;uniqueItems&quot;: true
+      },
+      &quot;expiresInDays&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 1,
+        &quot;maximum&quot;: 90,
+        &quot;default&quot;: 30
+      }
+    },
+    &quot;required&quot;: [
+      &quot;name&quot;,
+      &quot;scopes&quot;
+    ]
+  },
+  &quot;CreatedApiKey&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 80,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;prefix&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;scopes&quot;: {
+        &quot;type&quot;: &quot;array&quot;,
+        &quot;items&quot;: {
+          &quot;type&quot;: &quot;string&quot;,
+          &quot;enum&quot;: [
+            &quot;resources:read&quot;,
+            &quot;resources:write&quot;,
+            &quot;files:read&quot;,
+            &quot;files:write&quot;
+          ]
+        }
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;expiresAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;key&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;pattern&quot;: &quot;^ak_[A-Za-z0-9_-]{43}$&quot;,
+        &quot;description&quot;: &quot;Copy once. It cannot be retrieved again.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;name&quot;,
+      &quot;prefix&quot;,
+      &quot;scopes&quot;,
+      &quot;createdAt&quot;,
+      &quot;expiresAt&quot;,
+      &quot;key&quot;
+    ]
+  },
+  &quot;Project&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 120,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 2000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;,
+        &quot;default&quot;: &quot;&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;active&quot;,
+          &quot;archived&quot;
+        ],
+        &quot;default&quot;: &quot;active&quot;
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;updatedAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;name&quot;,
+      &quot;description&quot;,
+      &quot;status&quot;,
+      &quot;createdAt&quot;,
+      &quot;updatedAt&quot;
+    ]
+  },
+  &quot;ProjectCreate&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 120,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 2000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;,
+        &quot;default&quot;: &quot;&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;active&quot;,
+          &quot;archived&quot;
+        ],
+        &quot;default&quot;: &quot;active&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;name&quot;
+    ]
+  },
+  &quot;ProjectPatch&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 120,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 2000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;active&quot;,
+          &quot;archived&quot;
+        ]
+      }
+    },
+    &quot;required&quot;: [],
+    &quot;minProperties&quot;: 1
+  },
+  &quot;Task&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;title&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 200,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 4000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;,
+        &quot;default&quot;: &quot;&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;todo&quot;,
+          &quot;in_progress&quot;,
+          &quot;done&quot;
+        ],
+        &quot;default&quot;: &quot;todo&quot;
+      },
+      &quot;priority&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;low&quot;,
+          &quot;medium&quot;,
+          &quot;high&quot;
+        ],
+        &quot;default&quot;: &quot;medium&quot;
+      },
+      &quot;projectId&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uuid&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;default&quot;: null,
+        &quot;description&quot;: &quot;ID of a project you own, or null to remove the association.&quot;
+      },
+      &quot;dueDate&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date&quot;,
+            &quot;pattern&quot;: &quot;^\\d{4}-\\d{2}-\\d{2}$&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;default&quot;: null,
+        &quot;description&quot;: &quot;Valid calendar date, YYYY-MM-DD, or null.&quot;
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;updatedAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;title&quot;,
+      &quot;description&quot;,
+      &quot;status&quot;,
+      &quot;priority&quot;,
+      &quot;projectId&quot;,
+      &quot;dueDate&quot;,
+      &quot;createdAt&quot;,
+      &quot;updatedAt&quot;
+    ]
+  },
+  &quot;TaskCreate&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;title&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 200,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 4000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;,
+        &quot;default&quot;: &quot;&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;todo&quot;,
+          &quot;in_progress&quot;,
+          &quot;done&quot;
+        ],
+        &quot;default&quot;: &quot;todo&quot;
+      },
+      &quot;priority&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;low&quot;,
+          &quot;medium&quot;,
+          &quot;high&quot;
+        ],
+        &quot;default&quot;: &quot;medium&quot;
+      },
+      &quot;projectId&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uuid&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;default&quot;: null,
+        &quot;description&quot;: &quot;ID of a project you own, or null to remove the association.&quot;
+      },
+      &quot;dueDate&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date&quot;,
+            &quot;pattern&quot;: &quot;^\\d{4}-\\d{2}-\\d{2}$&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;default&quot;: null,
+        &quot;description&quot;: &quot;Valid calendar date, YYYY-MM-DD, or null.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;title&quot;
+    ]
+  },
+  &quot;TaskPatch&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;title&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 200,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;description&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 0,
+        &quot;maxLength&quot;: 4000,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      },
+      &quot;status&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;todo&quot;,
+          &quot;in_progress&quot;,
+          &quot;done&quot;
+        ]
+      },
+      &quot;priority&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;low&quot;,
+          &quot;medium&quot;,
+          &quot;high&quot;
+        ]
+      },
+      &quot;projectId&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uuid&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;description&quot;: &quot;ID of a project you own, or null to remove the association.&quot;
+      },
+      &quot;dueDate&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;date&quot;,
+            &quot;pattern&quot;: &quot;^\\d{4}-\\d{2}-\\d{2}$&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ],
+        &quot;description&quot;: &quot;Valid calendar date, YYYY-MM-DD, or null.&quot;
+      }
+    },
+    &quot;required&quot;: [],
+    &quot;minProperties&quot;: 1
+  },
+  &quot;ProfilePatch&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;name&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;minLength&quot;: 1,
+        &quot;maxLength&quot;: 100,
+        &quot;pattern&quot;: &quot;^[^&lt;&gt;\\u0000-\\u0008\\u000b\\u000c\\u000e-\\u001f\\u007f]*$&quot;,
+        &quot;description&quot;: &quot;Trimmed plain text. Angle brackets and unsafe control characters are rejected. Render as text in the frontend.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;name&quot;
+    ]
+  },
+  &quot;File&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;filename&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;maxLength&quot;: 120
+      },
+      &quot;contentType&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;enum&quot;: [
+          &quot;image/png&quot;,
+          &quot;image/jpeg&quot;,
+          &quot;image/webp&quot;
+        ]
+      },
+      &quot;size&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 1
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      },
+      &quot;downloadUrl&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;description&quot;: &quot;Relative protected URL: fetch it with your auth header.&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;filename&quot;,
+      &quot;contentType&quot;,
+      &quot;size&quot;,
+      &quot;createdAt&quot;,
+      &quot;downloadUrl&quot;
+    ]
+  },
+  &quot;AuditEvent&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;id&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;uuid&quot;
+      },
+      &quot;actorId&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;,
+            &quot;format&quot;: &quot;uuid&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ]
+      },
+      &quot;action&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;resourceType&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;resourceId&quot;: {
+        &quot;anyOf&quot;: [
+          {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          {
+            &quot;type&quot;: &quot;null&quot;
+          }
+        ]
+      },
+      &quot;requestId&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;metadata&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;additionalProperties&quot;: true
+      },
+      &quot;createdAt&quot;: {
+        &quot;type&quot;: &quot;string&quot;,
+        &quot;format&quot;: &quot;date-time&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;id&quot;,
+      &quot;actorId&quot;,
+      &quot;action&quot;,
+      &quot;resourceType&quot;,
+      &quot;resourceId&quot;,
+      &quot;requestId&quot;,
+      &quot;metadata&quot;,
+      &quot;createdAt&quot;
+    ]
+  },
+  &quot;PaginationMeta&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;page&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 1,
+        &quot;maximum&quot;: 10000
+      },
+      &quot;limit&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 1,
+        &quot;maximum&quot;: 100
+      },
+      &quot;total&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 0
+      },
+      &quot;totalPages&quot;: {
+        &quot;type&quot;: &quot;integer&quot;,
+        &quot;minimum&quot;: 0
+      },
+      &quot;hasNext&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;
+      },
+      &quot;hasPrevious&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;page&quot;,
+      &quot;limit&quot;,
+      &quot;total&quot;,
+      &quot;totalPages&quot;,
+      &quot;hasNext&quot;,
+      &quot;hasPrevious&quot;
+    ],
+    &quot;example&quot;: {
+      &quot;page&quot;: 1,
+      &quot;limit&quot;: 20,
+      &quot;total&quot;: 21,
+      &quot;totalPages&quot;: 2,
+      &quot;hasNext&quot;: true,
+      &quot;hasPrevious&quot;: false
+    }
+  },
+  &quot;ErrorDetail&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;field&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      },
+      &quot;message&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;field&quot;,
+      &quot;message&quot;
+    ]
+  },
+  &quot;Error&quot;: {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;additionalProperties&quot;: false,
+    &quot;properties&quot;: {
+      &quot;success&quot;: {
+        &quot;type&quot;: &quot;boolean&quot;,
+        &quot;const&quot;: false
+      },
+      &quot;error&quot;: {
+        &quot;type&quot;: &quot;object&quot;,
+        &quot;additionalProperties&quot;: false,
+        &quot;properties&quot;: {
+          &quot;code&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;message&quot;: {
+            &quot;type&quot;: &quot;string&quot;
+          },
+          &quot;details&quot;: {
+            &quot;description&quot;: &quot;Validation errors are an array of field/message objects.&quot;,
+            &quot;anyOf&quot;: [
+              {
+                &quot;type&quot;: &quot;array&quot;,
+                &quot;items&quot;: {
+                  &quot;$ref&quot;: &quot;#/components/schemas/ErrorDetail&quot;
+                }
+              },
+              {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;additionalProperties&quot;: true
+              }
+            ]
+          }
+        },
+        &quot;required&quot;: [
+          &quot;code&quot;,
+          &quot;message&quot;
+        ]
+      },
+      &quot;requestId&quot;: {
+        &quot;type&quot;: &quot;string&quot;
+      }
+    },
+    &quot;required&quot;: [
+      &quot;success&quot;,
+      &quot;error&quot;,
+      &quot;requestId&quot;
+    ]
+  }
+}</pre
+        >
+      </section>
+    </main>
+  </body>
+</html>
