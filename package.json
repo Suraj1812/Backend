@@ -3,34 +3,56 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22.12" },
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "setup:local": "node scripts/setup-local.mjs",
-    "dev": "wrangler dev",
+    "setup:production-secrets": "node scripts/setup-production-secrets.mjs",
+    "dev": "tsx watch scripts/dev.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "npm run typecheck && npm run test && npm run openapi:check && npm run build",
-    "build": "wrangler deploy --dry-run --outdir dist",
-    "db:migrate": "wrangler d1 migrations apply DB --local",
-    "db:seed": "node scripts/seed.mjs",
-    "admin:promote": "node scripts/promote-admin.mjs",
+    "build": "node scripts/build.mjs && tsx scripts/export-docs.ts",
+    "db:migrate": "tsx scripts/migrate-local.ts",
+    "db:seed": "tsx scripts/seed.ts",
+    "admin:promote": "tsx scripts/promote-admin.ts",
     "openapi:export": "tsx scripts/export-openapi.ts",
     "openapi:check": "tsx scripts/export-openapi.ts --check",
     "deploy:check": "node scripts/check-deployment.mjs",
-    "deploy": "npm run check && npm run deploy:check && wrangler d1 migrations apply DB --remote --env production && wrangler deploy --env production",
+    "deploy": "npm run check && npm run deploy:check && supabase db push --linked && supabase functions deploy backend maintenance --use-api",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "maintenance": "tsx scripts/run-maintenance.ts",
+    "supabase:login": "supabase login",
+    "supabase:link": "supabase link",
+    "dev:supabase": "supabase functions serve backend --env-file .env.local --no-verify-jwt",
+    "maintenance:setup": "node scripts/setup-maintenance.mjs",
+    "smoke:live": "node scripts/smoke-live.mjs",
+    "demo": "node scripts/demo.mjs"
   },
-  "dependencies": { "hono": "4.13.12", "jose": "6.2.12", "zod": "4.6.5" },
+  "dependencies": {
+    "hono": "4.13.12",
+    "jose": "6.2.12",
+    "zod": "4.6.5",
+    "postgres": "3.4.9"
+  },
   "devDependencies": {
-    "@cloudflare/vitest-pool-workers": "0.22.0",
-    "@cloudflare/workers-types": "5.20261003.1",
+    "@apidevtools/swagger-parser": "12.1.0",
     "@types/node": "26.6.4",
     "prettier": "3.8.3",
     "tsx": "4.21.0",
     "typescript": "7.0.2",
-    "vitest": "4.1.0",
-    "wrangler": "4.147.0"
-  }
+    "vitest": "4.1.11",
+    "@electric-sql/pglite": "0.5.8",
+    "@hono/node-server": "2.1.3",
+    "esbuild": "0.28.2",
+    "supabase": "2.119.0"
+  },
+  "overrides": {
+    "undici": "7.29.1",
+    "esbuild": "0.28.2"
+  },
+  "description": "Secure learning REST API on Supabase Edge Functions, PostgreSQL and private Storage"
 }
