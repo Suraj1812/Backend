@@ -4,3 +4,9 @@ dist
 package-lock.json
 docs/openapi.json
 .dev.vars
+.secrets
+tmp/pdfs
+
+.local/
+supabase/.temp/
+supabase/functions/*/app.js
