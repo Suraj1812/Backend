@@ -1,0 +1,11 @@
+import { Hono } from 'hono';
+import type { AppEnv } from '../../core/types';
+import { requireAuth, requireScope } from '../../middleware/auth';
+import { listTasks, getTask, createTask, updateTask, deleteTask } from './controller';
+export const taskRoutes = new Hono<AppEnv>();
+taskRoutes.use('*', requireAuth);
+taskRoutes.get('/', requireScope('resources:read'), listTasks);
+taskRoutes.get('/:id', requireScope('resources:read'), getTask);
+taskRoutes.post('/', requireScope('resources:write'), createTask);
+taskRoutes.patch('/:id', requireScope('resources:write'), updateTask);
+taskRoutes.delete('/:id', requireScope('resources:write'), deleteTask);
