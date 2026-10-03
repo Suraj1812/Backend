@@ -9,3 +9,12 @@ dist/
 coverage/
 *.log
 .DS_Store
+tmp/pdfs/
+__pycache__/
+*.pyc
+.secrets/
+
+.local/
+supabase/.temp/
+supabase/.branches/
+supabase/functions/*/app.js
